@@ -6,6 +6,8 @@ services:
       context: ./frontend
     ports:
       - "3000:3000"
+    volumes:
+      - ./frontend:/app
     depends_on:
       - backend
 
@@ -14,10 +16,17 @@ services:
       context: ./backend
     ports:
       - "8000:8000"
+    volumes:
+      - ./backend:/app
     depends_on:
       - dynamodb-local
 
   dynamodb-local:
     image: amazon/dynamodb-local
     ports:
-      - "8000:8000"
+      - "8001:8000"
+    volumes:
+      - dynamodb-data:/data
+
+volumes:
+  dynamodb-data:
