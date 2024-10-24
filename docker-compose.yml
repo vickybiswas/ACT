@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - dynamodb-local
+
+  dynamodb-local:
+    image: amazon/dynamodb-local
+    ports:
+      - "8000:8000"
