@@ -1,0 +1,22 @@
+# Ignore node_modules directory
+frontend/node_modules/
+
+# Ignore build directory
+frontend/build/
+
+# Ignore .env files
+frontend/.env
+backend/.env
+
+# Ignore SQLite database files
+frontend/*.sqlite
+frontend/*.sqlite3
+
+# Ignore Python virtual environment directory
+backend/venv/
+
+# Ignore __pycache__ directories
+backend/**/__pycache__/
+
+# Ignore .DS_Store files (for macOS users)
+.DS_Store
