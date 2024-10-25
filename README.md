@@ -4,123 +4,71 @@ AI Crafted for Trade -> AI that an organization can use and get value out of.
 ## Setup Instructions
 
 ### Prerequisites
+- Docker
+- Docker Compose
+- Node.js
+- Python 3.8+
+- SQLite
 
-- Node.js and npm installed
-- Python 3.7+ installed
-- SQLite installed
-- AWS account with DynamoDB setup
-- Docker and Docker Compose installed
-
-### Frontend (PWA)
-
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/vickybiswas/ACT.git
-   cd ACT
-   ```
-
-2. Navigate to the frontend directory:
+### Frontend Setup
+1. Navigate to the `frontend` directory:
    ```sh
    cd frontend
    ```
-
-3. Install dependencies:
+2. Install the dependencies:
    ```sh
    npm install
    ```
 
-4. Start the development server:
-   ```sh
-   npm start
-   ```
-
-### Backend (FastAPI)
-
-1. Navigate to the backend directory:
+### Backend Setup
+1. Navigate to the `backend` directory:
    ```sh
    cd backend
    ```
-
-2. Create a virtual environment and activate it:
+2. Create a virtual environment:
    ```sh
-   python3 -m venv venv
-   source venv/bin/activate
+   python -m venv venv
    ```
-
-3. Install dependencies:
+3. Activate the virtual environment:
+   - On Windows:
+     ```sh
+     venv\Scripts\activate
+     ```
+   - On macOS/Linux:
+     ```sh
+     source venv/bin/activate
+     ```
+4. Install the dependencies:
    ```sh
    pip install -r requirements.txt
    ```
 
-4. Start the FastAPI server:
-   ```sh
-   uvicorn app.main:app --reload
-   ```
-
-### Using Docker Compose
-
-1. Ensure Docker and Docker Compose are installed.
-
-2. Clone the repository:
-   ```sh
-   git clone https://github.com/vickybiswas/ACT.git
-   cd ACT
-   ```
-
-3. Start the services using Docker Compose:
-   ```sh
-   docker-compose up --build
-   ```
-
 ## Running Instructions
 
-### Frontend (PWA)
-
-1. Ensure the development server is running:
-   ```sh
-   npm start
-   ```
-
-2. Open your browser and navigate to:
-   ```
-   http://localhost:3000
-   ```
-
-### Backend (FastAPI)
-
-1. Ensure the FastAPI server is running:
-   ```sh
-   uvicorn app.main:app --reload
-   ```
-
-2. The API documentation will be available at:
-   ```
-   http://localhost:8000/docs
-   ```
-
-3. The API can be accessed at:
-   ```
-   http://localhost:8000
-   ```
-
 ### Using Docker Compose
-
-1. Ensure the services are running using Docker Compose:
+1. Ensure Docker and Docker Compose are installed on your machine.
+2. Navigate to the root directory of the project.
+3. Run the following command to start the services:
    ```sh
    docker-compose up --build
    ```
 
-2. Open your browser and navigate to:
-   ```
-   http://localhost:3000
-   ```
+### Accessing the Application
+- Frontend: Open your browser and navigate to `http://localhost:3000`
+- Backend: The FastAPI backend will be available at `http://localhost:8000`
 
-3. The API documentation will be available at:
-   ```
-   http://localhost:8000/docs
-   ```
+## Usage Instructions
 
-4. The API can be accessed at:
-   ```
-   http://localhost:8000
-   ```
+### Adding Names and Numbers
+1. Open the frontend application in your browser.
+2. Enter the names and numbers in the provided input fields.
+3. Click the "Save" button to save the data.
+
+### Syncing Data
+1. Click the "Sync" button to sync data between the SQLite database and DynamoDB.
+2. The application will prioritize old data from DynamoDB and new data from SQLite.
+
+## Additional Information
+- The application uses a FastAPI backend to handle API requests and interact with DynamoDB.
+- The frontend is built using React and saves data in a SQLite database on the client side.
+- Docker Compose is used to manage the frontend, backend, and local DynamoDB services.

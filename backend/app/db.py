@@ -1,65 +1,71 @@
 import boto3
-from botocore.exceptions import NoCredentialsError, PartialCredentialsError
+from botocore.exceptions import ClientError
 
 dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-table = dynamodb.Table('NamesNumbers')
+table_name = 'NamesNumbers'
 
-def insert_name(name_id, name):
+def create_dynamodb_table():
     try:
-        table.put_item(Item={"id": name_id, "name": name})
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise Exception(f"Error inserting name: {str(e)}")
-
-def update_name(name_id, name):
-    try:
-        table.update_item(
-            Key={"id": name_id},
-            UpdateExpression="set #n = :n",
-            ExpressionAttributeNames={"#n": "name"},
-            ExpressionAttributeValues={":n": name}
+        table = dynamodb.create_table(
+            TableName=table_name,
+            KeySchema=[
+                {
+                    'AttributeName': 'id',
+                    'KeyType': 'HASH'
+                }
+            ],
+            AttributeDefinitions=[
+                {
+                    'AttributeName': 'id',
+                    'AttributeType': 'N'
+                }
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
         )
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise Exception(f"Error updating name: {str(e)}")
+        table.wait_until_exists()
+    except ClientError as e:
+        if e.response['Error']['Code'] != 'ResourceInUseException':
+            raise
 
-def delete_name(name_id):
-    try:
-        table.delete_item(Key={"id": name_id})
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise Exception(f"Error deleting name: {str(e)}")
+def insert_data_dynamodb(id, name, number):
+    table = dynamodb.Table(table_name)
+    table.put_item(
+        Item={
+            'id': id,
+            'name': name,
+            'number': number
+        }
+    )
 
-def fetch_names():
-    try:
-        response = table.scan()
-        return response['Items']
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise Exception(f"Error fetching names: {str(e)}")
+def update_data_dynamodb(id, name, number):
+    table = dynamodb.Table(table_name)
+    table.update_item(
+        Key={
+            'id': id
+        },
+        UpdateExpression='SET #name = :name, #number = :number',
+        ExpressionAttributeNames={
+            '#name': 'name',
+            '#number': 'number'
+        },
+        ExpressionAttributeValues={
+            ':name': name,
+            ':number': number
+        }
+    )
 
-def insert_number(number_id, number):
-    try:
-        table.put_item(Item={"id": number_id, "number": number})
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise Exception(f"Error inserting number: {str(e)}")
+def delete_data_dynamodb(id):
+    table = dynamodb.Table(table_name)
+    table.delete_item(
+        Key={
+            'id': id
+        }
+    )
 
-def update_number(number_id, number):
-    try:
-        table.update_item(
-            Key={"id": number_id},
-            UpdateExpression="set #n = :n",
-            ExpressionAttributeNames={"#n": "number"},
-            ExpressionAttributeValues={":n": number}
-        )
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise Exception(f"Error updating number: {str(e)}")
-
-def delete_number(number_id):
-    try:
-        table.delete_item(Key={"id": number_id})
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise Exception(f"Error deleting number: {str(e)}")
-
-def fetch_numbers():
-    try:
-        response = table.scan()
-        return response['Items']
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise Exception(f"Error fetching numbers: {str(e)}")
+def fetch_data_dynamodb():
+    table = dynamodb.Table(table_name)
+    response = table.scan()
+    return response['Items']

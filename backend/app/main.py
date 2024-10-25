@@ -1,108 +1,56 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List
-import boto3
-from botocore.exceptions import NoCredentialsError, PartialCredentialsError
+import uvicorn
+from .db import (
+    create_dynamodb_table,
+    insert_data_dynamodb,
+    update_data_dynamodb,
+    delete_data_dynamodb,
+    fetch_data_dynamodb,
+)
 
 app = FastAPI()
 
-dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-table = dynamodb.Table('NamesNumbers')
-
-class Name(BaseModel):
+class NameNumber(BaseModel):
     id: int
     name: str
-
-class Number(BaseModel):
-    id: int
     number: str
 
-class SyncData(BaseModel):
-    names: List[Name]
-    numbers: List[Number]
+@app.on_event("startup")
+async def startup_event():
+    create_dynamodb_table()
 
-@app.post("/sync")
-async def sync_data(data: SyncData):
+@app.post("/names_numbers/", response_model=NameNumber)
+async def create_name_number(name_number: NameNumber):
     try:
-        with table.batch_writer() as batch:
-            for name in data.names:
-                batch.put_item(Item={"id": name.id, "name": name.name})
-            for number in data.numbers:
-                batch.put_item(Item={"id": number.id, "number": number.number})
-        return {"message": "Data synced successfully"}
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        insert_data_dynamodb(name_number.id, name_number.name, name_number.number)
+        return name_number
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/names")
-async def create_name(name: Name):
+@app.get("/names_numbers/", response_model=List[NameNumber])
+async def read_names_numbers():
     try:
-        table.put_item(Item={"id": name.id, "name": name.name})
-        return {"message": "Name added successfully"}
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return fetch_data_dynamodb()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-@app.get("/names")
-async def read_names():
+@app.put("/names_numbers/{name_number_id}", response_model=NameNumber)
+async def update_name_number(name_number_id: int, name_number: NameNumber):
     try:
-        response = table.scan()
-        return response['Items']
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        update_data_dynamodb(name_number_id, name_number.name, name_number.number)
+        return name_number
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-@app.put("/names/{name_id}")
-async def update_name(name_id: int, name: Name):
+@app.delete("/names_numbers/{name_number_id}")
+async def delete_name_number(name_number_id: int):
     try:
-        table.update_item(
-            Key={"id": name_id},
-            UpdateExpression="set #n = :n",
-            ExpressionAttributeNames={"#n": "name"},
-            ExpressionAttributeValues={":n": name.name}
-        )
-        return {"message": "Name updated successfully"}
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        delete_data_dynamodb(name_number_id)
+        return {"message": "Name and number deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-@app.delete("/names/{name_id}")
-async def delete_name(name_id: int):
-    try:
-        table.delete_item(Key={"id": name_id})
-        return {"message": "Name deleted successfully"}
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/numbers")
-async def create_number(number: Number):
-    try:
-        table.put_item(Item={"id": number.id, "number": number.number})
-        return {"message": "Number added successfully"}
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/numbers")
-async def read_numbers():
-    try:
-        response = table.scan()
-        return response['Items']
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.put("/numbers/{number_id}")
-async def update_number(number_id: int, number: Number):
-    try:
-        table.update_item(
-            Key={"id": number_id},
-            UpdateExpression="set #n = :n",
-            ExpressionAttributeNames={"#n": "number"},
-            ExpressionAttributeValues={":n": number.number}
-        )
-        return {"message": "Number updated successfully"}
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.delete("/numbers/{number_id}")
-async def delete_number(number_id: int):
-    try:
-        table.delete_item(Key={"id": number_id})
-        return {"message": "Number deleted successfully"}
-    except (NoCredentialsError, PartialCredentialsError) as e:
-        raise HTTPException(status_code=500, detail=str(e))
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

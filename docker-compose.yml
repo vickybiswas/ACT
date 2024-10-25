@@ -4,6 +4,7 @@ services:
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     volumes:
@@ -14,19 +15,20 @@ services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
     depends_on:
-      - dynamodb-local
+      - dynamodb
 
-  dynamodb-local:
+  dynamodb:
     image: amazon/dynamodb-local
     ports:
       - "8001:8000"
     volumes:
-      - dynamodb-data:/data
+      - dynamodb_data:/data
 
 volumes:
-  dynamodb-data:
+  dynamodb_data:
