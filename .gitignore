@@ -12,3 +12,15 @@ backend/venv/
 
 # Ignore __pycache__ directories
 backend/__pycache__/
+
+# Ignore Docker related files
+frontend/.dockerignore
+backend/.dockerignore
+
+# Ignore environment files
+frontend/.env
+backend/.env
+
+# Ignore log files
+frontend/logs/
+backend/logs/
