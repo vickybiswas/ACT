@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Button, Table } from 'react-bootstrap';
-import { saveDataToSQLite, syncDataWithDynamoDB, fetchDataFromSQLite } from './db';
+import { insertData, syncDataWithDynamoDB, fetchDataFromSQLite } from './db';
 
 const App = () => {
   const [name, setName] = useState('');
@@ -16,7 +16,7 @@ const App = () => {
   }, []);
 
   const handleSave = async () => {
-    await saveDataToSQLite(name, number);
+    await insertData(name, number);
     const result = await fetchDataFromSQLite();
     setData(result);
     setName('');
